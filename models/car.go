@@ -7,7 +7,9 @@ import (
 
 	"github.com/google/uuid"
 )
-
+var (
+	ErrRecordNotFound = errors.New("record not found")
+)
 type Car struct {
 	ID uuid.UUID `json:"id"`
 	Name string `json:"name"`
