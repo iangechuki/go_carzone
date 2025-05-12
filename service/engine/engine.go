@@ -2,8 +2,8 @@ package engine
 
 import (
 	"context"
-	"go_carzone/models"
-	"go_carzone/store"
+	"github.com/iangechuki/go_carzone/models"
+	"github.com/iangechuki/go_carzone/store"
 )
 
 type EngineService struct{

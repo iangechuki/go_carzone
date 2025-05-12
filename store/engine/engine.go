@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"go_carzone/models"
+	"github.com/iangechuki/go_carzone/models"
 
 	"github.com/google/uuid"
 )

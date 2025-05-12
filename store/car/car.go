@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"go_carzone/models"
+	"github.com/iangechuki/go_carzone/models"
 	"time"
 
 	"github.com/google/uuid"
