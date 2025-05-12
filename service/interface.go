@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"go_carzone/models"
+	"github.com/iangechuki/go_carzone/models"
 )
 
 type CarServiceInterface interface {

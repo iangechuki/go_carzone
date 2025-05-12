@@ -1,4 +1,4 @@
-module go_carzone
+module github.com/iangechuki/go_carzone
 
 go 1.24.2
 

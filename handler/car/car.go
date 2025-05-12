@@ -2,8 +2,8 @@ package car
 
 import (
 	"encoding/json"
-	"go_carzone/models"
-	"go_carzone/service"
+	"github.com/iangechuki/go_carzone/models"
+	"github.com/iangechuki/go_carzone/service"
 	"io"
 	"log"
 	"net/http"
