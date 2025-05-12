@@ -20,7 +20,7 @@ func New(db *sql.DB) EngineStore {
 	}
 }
 
-func (s *EngineStore) GetEngineByID(ctx context.Context,id uuid.UUID) (models.Engine,error) {
+func (s *EngineStore) GetEngineByID(ctx context.Context,id string) (models.Engine,error) {
 	var engine models.Engine
 	tx,err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *EngineStore) GetEngineByID(ctx context.Context,id uuid.UUID) (models.En
 	return engine,nil
 }
 
-func (s *EngineStore) CreateEngine(ctx context.Context,engineReq models.EngineRequest) (models.Engine,error) {
+func (s *EngineStore) CreateEngine(ctx context.Context,engineReq *models.EngineRequest) (models.Engine,error) {
 	tx,err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return models.Engine{},err
@@ -136,7 +136,7 @@ func (s *EngineStore) UpdateEngine(ctx context.Context,id string,engineReq *mode
 	return engine,nil
 }
 
-func (s *EngineStore) DeleteEngine(ctx context.Context,id uuid.UUID) (models.Engine,error) {
+func (s *EngineStore) DeleteEngine(ctx context.Context,id string) (models.Engine,error) {
 	var engine models.Engine
 	tx,err := s.db.BeginTx(ctx, nil)
 	if err != nil {
