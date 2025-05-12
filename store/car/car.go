@@ -21,7 +21,7 @@ func New(db *sql.DB) Store {
 	}
 }
 
-func (s *Store) CreateCar(ctx context.Context,carReq models.CarRequest) (models.Car,error) {
+func (s *Store) CreateCar(ctx context.Context,carReq *models.CarRequest) (models.Car,error) {
 	var createdCar models.Car
 	var engineID uuid.UUID
 	err := s.db.QueryRowContext(ctx,"SELECT id FROM engine WHERE id = $1",carReq.Engine.EngineID).Scan(&engineID)
@@ -97,7 +97,7 @@ func (s *Store)GetCarByID(ctx context.Context,id string) (models.Car,error) {
 	}
 	return car,nil
 }
-func (s *Store)GetCarByBrand(ctx context.Context,brand string,isEngine bool) ([]models.Car,error) {
+func (s *Store)GetCarsByBrand(ctx context.Context,brand string,isEngine bool) ([]models.Car,error) {
 	var cars []models.Car
 	var query string
 	if isEngine {
