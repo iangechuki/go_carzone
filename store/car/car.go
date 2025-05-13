@@ -70,7 +70,7 @@ func (s *Store)GetCarByID(ctx context.Context,id string) (models.Car,error) {
 	var car models.Car
 
 	query := `SELECT c.id, c.name, c.year, c.brand, c.fuel_type,c.engine_id,c.price,
-	c.created_at, c.updated_at, e.id, e.displacement, e.no_of_cylinders, e.car_range
+	c.created_at, c.updated_at,e.displacement, e.no_of_cylinders, e.car_range
 	FROM car c
 	LEFT JOIN engine e ON c.engine_id = e.id WHERE c.id = $1`
 
