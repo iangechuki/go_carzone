@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/iangechuki/go_carzone/models"
 	"time"
+
+	"github.com/iangechuki/go_carzone/models"
 
 	"github.com/google/uuid"
 )
@@ -15,8 +16,8 @@ type Store struct {
 	db *sql.DB
 }
 
-func New(db *sql.DB) Store {
-	return Store{
+func New(db *sql.DB) *Store {
+	return &Store{
 		db: db,
 	}
 }

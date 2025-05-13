@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/iangechuki/go_carzone/models"
 
 	"github.com/google/uuid"
@@ -14,8 +15,8 @@ type EngineStore struct {
 	db *sql.DB
 }
 
-func New(db *sql.DB) EngineStore {
-	return EngineStore{
+func New(db *sql.DB) *EngineStore {
+	return &EngineStore{
 		db: db,
 	}
 }
