@@ -20,6 +20,7 @@ import (
 	carStore "github.com/iangechuki/go_carzone/store/car"
 	engineStore "github.com/iangechuki/go_carzone/store/engine"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	otelmux "go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -93,6 +94,7 @@ func main(){
 	protected.HandleFunc("/engines/{id}",engineHandler.UpdateEngine).Methods("PUT")
 	protected.HandleFunc("/engines/{id}",engineHandler.DeleteEngine).Methods("DELETE")
 	
+	router.Handle("/metrics",promhttp.Handler())
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

@@ -4,13 +4,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=postgres
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - JAEGER_AGENT_HOST=jaeger
-      - JAEGER_AGENT_PORT=4318
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: "4318"
+      PROMETHEUS_ENDPOINT: "/metrics"
     depends_on:
       db:
         condition: service_healthy
@@ -21,12 +22,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
+      timeout: 2s
       retries: 5
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -35,13 +37,36 @@ services:
     image: jaegertracing/all-in-one:latest
     ports:
       - "6831:6831/udp"
-      - "4381:4381"
+      - "4318:4318"
       - "14268:14268"
       - "16686:16686"
-
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      # Bind mount the local prometheus.yml (must exist alongside docker-compose.yml)
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - app
+      - jaeger
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
 
 volumes:
   postgres-data:
+  grafana-data:
