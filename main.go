@@ -1,24 +1,33 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/iangechuki/go_carzone/driver"
 	carHandler "github.com/iangechuki/go_carzone/handler/car"
-	"github.com/iangechuki/go_carzone/middleware"
-	carService "github.com/iangechuki/go_carzone/service/car"
-	carStore "github.com/iangechuki/go_carzone/store/car"
-
 	engineHandler "github.com/iangechuki/go_carzone/handler/engine"
 	loginHandler "github.com/iangechuki/go_carzone/handler/login"
+	"github.com/iangechuki/go_carzone/middleware"
+	carService "github.com/iangechuki/go_carzone/service/car"
 	engineService "github.com/iangechuki/go_carzone/service/engine"
+	carStore "github.com/iangechuki/go_carzone/store/car"
 	engineStore "github.com/iangechuki/go_carzone/store/engine"
 	"github.com/joho/godotenv"
+	otelmux "go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 
@@ -27,6 +36,18 @@ func main(){
 	if err != nil {
 		log.Fatal("Error loading .env file: ",err)
 	}
+	traceProvider,err := startTracing()
+	if err != nil {
+		log.Fatal("Error starting tracing: ",err)
+	}
+	defer func(){
+		if err := traceProvider.Shutdown(context.Background()); err != nil {
+			log.Fatal("Error shutting down tracing: ",err)
+		}
+	}()
+
+	otel.SetTracerProvider(traceProvider)
+
 	driver.InitDB()
 	defer driver.CloseDB()
 	db := driver.GetDB()
@@ -40,6 +61,7 @@ func main(){
 
 	router := mux.NewRouter()
 
+	router.Use(otelmux.Middleware("CarZone"))
 	
 	schemaFile := "store/schema.sql"
 
@@ -89,4 +111,38 @@ func executeSchemaFile(db *sql.DB,fileName string)error{
 		log.Fatal("Error executing schema file: ",err)
 	}
 	return nil
+}
+
+func startTracing()(*trace.TracerProvider,error){
+	header := map[string]string{
+		"Content-Type":"application/json",
+
+	}
+	exporter,err := otlptrace.New(
+		context.Background(),
+		otlptracehttp.NewClient(
+			otlptracehttp.WithEndpoint("jaeger:4318"),
+			otlptracehttp.WithHeaders(header),
+			otlptracehttp.WithInsecure(),
+		),
+	)
+	if err != nil {
+		return nil,err
+	}
+	traceProvider := trace.NewTracerProvider(
+		trace.WithBatcher(
+			exporter,
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+			trace.WithBatchTimeout(trace.DefaultScheduleDelay * time.Millisecond),
+			),
+		trace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("carzone"),
+		),
+	),
+	)
+
+		
+	
+	return traceProvider,nil
 }

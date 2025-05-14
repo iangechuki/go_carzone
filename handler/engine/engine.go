@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/iangechuki/go_carzone/models"
 	"github.com/iangechuki/go_carzone/service"
+	"go.opentelemetry.io/otel"
 )
 
 type EngineHandler struct {
@@ -22,7 +23,10 @@ func NewEngineHandler(engineService service.EngineServiceInterface) *EngineHandl
 }
 
 func (h *EngineHandler)GetEngineByID(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx,span := tracer.Start(r.Context(), "GetEngineByID-Handler")
+	defer span.End()
+
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -49,7 +53,9 @@ func (h *EngineHandler)GetEngineByID(w http.ResponseWriter,r *http.Request){
 }
 
 func (h *EngineHandler)CreateEngine(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx,span := tracer.Start(r.Context(), "CreateEngine-Handler")
+	defer span.End()
 
 	body,err := io.ReadAll(r.Body)
 	if err != nil {
@@ -88,7 +94,10 @@ func (h *EngineHandler)CreateEngine(w http.ResponseWriter,r *http.Request){
 }
 
 func (h *EngineHandler)DeleteEngine(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx,span := tracer.Start(r.Context(), "DeleteEngine-Handler")
+	defer span.End()
+
 	vars := mux.Vars(r)
 	id := vars["id"]
 	deletedEngine,err := h.engineService.DeleteEngine(ctx,id)
@@ -105,7 +114,10 @@ func (h *EngineHandler)DeleteEngine(w http.ResponseWriter,r *http.Request){
 }	
 
 func (h *EngineHandler)UpdateEngine(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx,span := tracer.Start(r.Context(), "UpdateEngine-Handler")
+	defer span.End()
+	
 	vars := mux.Vars(r)
 	id := vars["id"]
 
