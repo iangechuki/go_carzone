@@ -10,10 +10,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/iangechuki/go_carzone/driver"
 	carHandler "github.com/iangechuki/go_carzone/handler/car"
+	"github.com/iangechuki/go_carzone/middleware"
 	carService "github.com/iangechuki/go_carzone/service/car"
 	carStore "github.com/iangechuki/go_carzone/store/car"
 
 	engineHandler "github.com/iangechuki/go_carzone/handler/engine"
+	loginHandler "github.com/iangechuki/go_carzone/handler/login"
 	engineService "github.com/iangechuki/go_carzone/service/engine"
 	engineStore "github.com/iangechuki/go_carzone/store/engine"
 	"github.com/joho/godotenv"
@@ -38,6 +40,7 @@ func main(){
 
 	router := mux.NewRouter()
 
+	
 	schemaFile := "store/schema.sql"
 
 	if err := executeSchemaFile(db,schemaFile); err != nil {
@@ -52,16 +55,21 @@ func main(){
 			return
 		}
 	}).Methods("GET")
-	router.HandleFunc("/cars/{id}",carHandler.GetCarByID).Methods("GET")
-	router.HandleFunc("/cars",carHandler.GetCarByBrand).Methods("GET")
-	router.HandleFunc("/cars",carHandler.CreateCar).Methods("POST")
-	router.HandleFunc("/cars/{id}",carHandler.UpdateCar).Methods("PUT")
-	router.HandleFunc("/cars/{id}",carHandler.DeleteCar).Methods("DELETE")
+	router.HandleFunc("/login",loginHandler.LoginHandler).Methods("POST")
+	
+	protected := router.PathPrefix("/").Subrouter()
 
-	router.HandleFunc("/engines/{id}",engineHandler.GetEngineByID).Methods("GET")
-	router.HandleFunc("/engines",engineHandler.CreateEngine).Methods("POST")
-	router.HandleFunc("/engines/{id}",engineHandler.UpdateEngine).Methods("PUT")
-	router.HandleFunc("/engines/{id}",engineHandler.DeleteEngine).Methods("DELETE")
+	protected.Use(middleware.AuthMiddleware)
+	protected.HandleFunc("/cars/{id}",carHandler.GetCarByID).Methods("GET")
+	protected.HandleFunc("/cars",carHandler.GetCarByBrand).Methods("GET")
+	protected.HandleFunc("/cars",carHandler.CreateCar).Methods("POST")
+	protected.HandleFunc("/cars/{id}",carHandler.UpdateCar).Methods("PUT")
+	protected.HandleFunc("/cars/{id}",carHandler.DeleteCar).Methods("DELETE")
+
+	protected.HandleFunc("/engines/{id}",engineHandler.GetEngineByID).Methods("GET")
+	protected.HandleFunc("/engines",engineHandler.CreateEngine).Methods("POST")
+	protected.HandleFunc("/engines/{id}",engineHandler.UpdateEngine).Methods("PUT")
+	protected.HandleFunc("/engines/{id}",engineHandler.DeleteEngine).Methods("DELETE")
 	
 	port := os.Getenv("PORT")
 	if port == "" {
