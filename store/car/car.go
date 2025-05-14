@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/iangechuki/go_carzone/models"
+	"go.opentelemetry.io/otel"
 
 	"github.com/google/uuid"
 )
@@ -23,6 +24,10 @@ func New(db *sql.DB) *Store {
 }
 
 func (s *Store) CreateCar(ctx context.Context,carReq *models.CarRequest) (models.Car,error) {
+	tracer := otel.Tracer("CarStore")
+	ctx,span := tracer.Start(ctx, "CreateCar-Store")
+	defer span.End()
+
 	var createdCar models.Car
 	var engineID uuid.UUID
 	err := s.db.QueryRowContext(ctx,"SELECT id FROM engine WHERE id = $1",carReq.Engine.EngineID).Scan(&engineID)
@@ -67,6 +72,10 @@ func (s *Store) CreateCar(ctx context.Context,carReq *models.CarRequest) (models
 	return createdCar,nil
 }
 func (s *Store)GetCarByID(ctx context.Context,id string) (models.Car,error) {
+	tracer := otel.Tracer("CarStore")
+	ctx,span := tracer.Start(ctx, "GetCarByID-Store")
+	defer span.End()
+
 	var car models.Car
 
 	query := `SELECT c.id, c.name, c.year, c.brand, c.fuel_type,c.engine_id,c.price,
@@ -99,6 +108,11 @@ func (s *Store)GetCarByID(ctx context.Context,id string) (models.Car,error) {
 	return car,nil
 }
 func (s *Store)GetCarsByBrand(ctx context.Context,brand string,isEngine bool) ([]models.Car,error) {
+	
+	tracer := otel.Tracer("CarStore")
+	ctx,span := tracer.Start(ctx, "GetCarsByBrand-Store")
+	defer span.End()
+
 	var cars []models.Car
 	var query string
 	if isEngine {
@@ -160,6 +174,10 @@ func (s *Store)GetCarsByBrand(ctx context.Context,brand string,isEngine bool) ([
 	return cars,nil
 }
 func (s *Store)UpdateCar(ctx context.Context,id string,carReq *models.CarRequest) (models.Car,error) {
+	tracer := otel.Tracer("CarStore")
+	ctx,span := tracer.Start(ctx, "UpdateCar-Store")
+	defer span.End()
+
 	 var updatedCar models.Car
 
 	 tx ,err := s.db.BeginTx(ctx, nil)
@@ -195,6 +213,10 @@ func (s *Store)UpdateCar(ctx context.Context,id string,carReq *models.CarRequest
 	 return updatedCar, nil
 }
 func (s *Store)DeleteCar(ctx context.Context,id string) (models.Car,error) {
+	tracer := otel.Tracer("CarStore")
+	ctx,span := tracer.Start(ctx, "DeleteCar-Store")
+	defer span.End()
+	
 	var deletedCar models.Car
 	tx,err := s.db.BeginTx(ctx, nil)
 	if err != nil {

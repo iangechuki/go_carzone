@@ -2,11 +2,13 @@ package car
 
 import (
 	"encoding/json"
-	"github.com/iangechuki/go_carzone/models"
-	"github.com/iangechuki/go_carzone/service"
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/iangechuki/go_carzone/models"
+	"github.com/iangechuki/go_carzone/service"
+	"go.opentelemetry.io/otel"
 
 	"github.com/gorilla/mux"
 )
@@ -22,7 +24,10 @@ func NewCarHandler(service service.CarServiceInterface) *CarHandler {
 }
 
 func (h *CarHandler)GetCarByID(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("CarHandler")
+	ctx,span := tracer.Start(r.Context(), "GetCarByID-Handler")
+	defer span.End()
+	
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -48,7 +53,10 @@ func (h *CarHandler)GetCarByID(w http.ResponseWriter,r *http.Request){
 	}
 }
 func (h *CarHandler)GetCarByBrand(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("CarHandler")
+	ctx,span := tracer.Start(r.Context(), "GetCarByBrand-Handler")
+	defer span.End()
+
 	brand := r.URL.Query().Get("brand")
 	isEngine := r.URL.Query().Get("isEngine") == "true"
 
@@ -74,7 +82,9 @@ func (h *CarHandler)GetCarByBrand(w http.ResponseWriter,r *http.Request){
 	}
 }
 func (h *CarHandler)CreateCar(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("CarHandler")
+	ctx,span := tracer.Start(r.Context(), "CreateCar-Handler")
+	defer span.End()
 
 	body,err := io.ReadAll(r.Body)
 	if err != nil {
@@ -112,7 +122,10 @@ func (h *CarHandler)CreateCar(w http.ResponseWriter,r *http.Request){
 	}
 }
 func (h *CarHandler)UpdateCar(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("CarHandler")
+	ctx,span := tracer.Start(r.Context(), "UpdateCar-Handler")
+	defer span.End()
+
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -136,7 +149,10 @@ func (h *CarHandler)UpdateCar(w http.ResponseWriter,r *http.Request){
 
 }
 func (h *CarHandler)DeleteCar(w http.ResponseWriter,r *http.Request){
-	ctx := r.Context()
+	tracer := otel.Tracer("CarHandler")
+	ctx,span := tracer.Start(r.Context(), "DeleteCar-Handler")
+	defer span.End()
+
 	vars := mux.Vars(r)
 	id := vars["id"]
 	deletedCar,err := h.carService.DeleteCar(ctx,id)
